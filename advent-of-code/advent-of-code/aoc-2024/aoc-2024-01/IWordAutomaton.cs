@@ -3,6 +3,5 @@
 public interface IWordAutomaton
 {
     public string GetWord();
-    public bool CheckCharForward(char c);
-    public bool CheckCharBackward(char c);
+    public int CheckChar(char c);
 }

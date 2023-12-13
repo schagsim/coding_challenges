@@ -66,15 +66,35 @@ public static class AoC202401
         {"zero", 0},
     };
 
-    private static readonly List<IWordAutomaton> WordCheckers;
+    private static List<IWordAutomaton> _frontWordCheckers;
+    private static List<IWordAutomaton> _backWordCheckers;
+
+    private static readonly Dictionary<char, HashSet<string>> CharWordsInitFrontPairing;
+    private static readonly Dictionary<char, HashSet<string>> CharWordsInitBackPairing;
 
     static AoC202401()
     {
-        WordCheckers = new List<IWordAutomaton>();
+        _frontWordCheckers = new List<IWordAutomaton>();
+        _backWordCheckers = new List<IWordAutomaton>();
+        CharWordsInitFrontPairing = new Dictionary<char, HashSet<string>>();
+        CharWordsInitBackPairing = new Dictionary<char, HashSet<string>>();
+        
         var digitsKeys = DigitsMap.Keys;
         foreach (var key in digitsKeys)
         {
-            WordCheckers.Add(new WordAutomaton(key));
+            var firstChar = key[0];
+            var lastChar = key[^1];
+            if (!CharWordsInitFrontPairing.ContainsKey(firstChar))
+            {
+                CharWordsInitFrontPairing[firstChar] = new HashSet<string>();
+            }
+            CharWordsInitFrontPairing[firstChar].Add(key);
+
+            if (!CharWordsInitBackPairing.ContainsKey(lastChar))
+            {
+                CharWordsInitBackPairing[lastChar] = new HashSet<string>();
+            }
+            CharWordsInitBackPairing[lastChar].Add(key);
         }
     }
     
@@ -121,31 +141,91 @@ public static class AoC202401
         return firstFound && lastFound;
     }
 
+    private static void AddCheckers(char frontChar, char backChar)
+    {
+        if (CharWordsInitFrontPairing.TryGetValue(frontChar, out var wordCheckersToCreate))
+        {
+            foreach (var wordCheckerToCreate in wordCheckersToCreate)
+            {
+                _frontWordCheckers.Add(new FrontWordAutomaton(wordCheckerToCreate));
+            }
+        }
+        
+        if (CharWordsInitBackPairing.TryGetValue(backChar, out wordCheckersToCreate))
+        {
+            foreach (var wordCheckerToCreate in wordCheckersToCreate)
+            {
+                _backWordCheckers.Add(new BackWordAutomaton(wordCheckerToCreate));
+            }
+        }
+    }
+
+    private static bool CheckCheckers(in List<IWordAutomaton> wordAutomata, char frontChar, out string matchedWord)
+    {
+        matchedWord = string.Empty;
+        for (var i = wordAutomata.Count - 1; i >= 0; i--)
+        {
+            var matchResult = wordAutomata[i].CheckChar(frontChar);
+            if (matchResult == 0)
+            {
+                wordAutomata.RemoveAt(i);
+            }
+
+            if (matchResult == 2)
+            {
+                matchedWord = wordAutomata[i].GetWord();
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    private static void ClearCheckers()
+    {
+        for (var i = _frontWordCheckers.Count - 1; i >= 0; i--)
+        {
+            _frontWordCheckers.RemoveAt(i);
+        }
+        
+        for (var i = _backWordCheckers.Count - 1; i >= 0; i--)
+        {
+            _backWordCheckers.RemoveAt(i);
+        }
+    }
+
     private static bool FindFirstAndLastDigitV2(string line, out int firstDigit, out int lastDigit)
     {
         firstDigit = 0;
         lastDigit = 0;
         var firstFound = false;
         var lastFound = false;
+        ClearCheckers();
         
         var currentIndex = 0;
         while (currentIndex != line.Length && !(firstFound && lastFound))
         {
             var currentChar = line[currentIndex];
             var reverseChar = line[line.Length - currentIndex - 1];
-            foreach (var wordChecker in WordCheckers)
+            AddCheckers(currentChar, reverseChar);
+            if
+            (
+                !firstFound &&
+                CheckCheckers(_frontWordCheckers, currentChar, out var matchedWord) &&
+                ConvertWordToDigit(matchedWord, out firstDigit)
+            )
             {
-                if (!firstFound && wordChecker.CheckCharForward(currentChar))
-                {
-                    ConvertWordToDigit(wordChecker.GetWord(), out firstDigit);
-                    firstFound = true;
-                }
-
-                if (!lastFound && wordChecker.CheckCharBackward(reverseChar))
-                {
-                    ConvertWordToDigit(wordChecker.GetWord(), out lastDigit);
-                    lastFound = true;
-                }
+                firstFound = true;
+            }
+            
+            if
+            (
+                !lastFound &&
+                CheckCheckers(_backWordCheckers, reverseChar, out matchedWord) &&
+                ConvertWordToDigit(matchedWord, out lastDigit)
+            )
+            {
+                lastFound = true;
             }
 
             currentIndex++;

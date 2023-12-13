@@ -1,82 +1,68 @@
 ﻿namespace advent_of_code.aoc_2024.aoc_2024_01;
 
-public class WordAutomaton : IWordAutomaton
+public abstract class WordAutomaton : IWordAutomaton
 {
-    private readonly string _word;
-    private readonly string _reverseWord;
+    protected string Word;
 
     private int _currentIndex;
-    private int _currentBackIndex;
-    
-    public WordAutomaton(string word)
+
+    protected WordAutomaton()
     {
-        _word = word;
+        Word = string.Empty;
+        _currentIndex = 0;
+    }
+
+    protected WordAutomaton(string word)
+    {
+        Word = word;
+        _currentIndex = 0;
+    }
+    
+    public virtual string GetWord()
+    {
+        return Word;
+    }
+
+    /// <summary>
+    /// Check next char in this checker. 
+    /// </summary>
+    /// <param name="c">Char to check.</param>
+    /// <returns>2 if the word has been matched, 1 if this matcher is still active but not yet matched fully, 0 if we can discard this matcher.</returns>
+    public virtual int CheckChar(char c)
+    {
+        if (c != Word[_currentIndex]) return 0;
+        
+        if (_currentIndex == Word.Length - 1)
+        {
+            return 2;
+        }
+        _currentIndex++;
+        return 1;
+    }
+    
+}
+
+public class FrontWordAutomaton : WordAutomaton
+{
+    public FrontWordAutomaton(string word) : base(word)
+    {
+    }
+}
+
+public class BackWordAutomaton : WordAutomaton
+{
+    private readonly string _originalWord;
+    
+    public BackWordAutomaton(string word)
+    {
         var charArray = word.ToCharArray();
         Array.Reverse(charArray);
-        _reverseWord = new string(charArray);
-        _currentIndex = 0;
-        _currentBackIndex = _word.Length - 1;
-    }
-    
-    public string GetWord()
-    {
-        return _word;
+        Word = new string(charArray);
+        _originalWord = word;
     }
 
-    public bool CheckCharForward(char c)
+    public override string GetWord()
     {
-        var searchSuccessful = false;
-        if (c != _word[_currentIndex])
-        {
-            _currentIndex = 0;
-        }
-        
-        if (c == _word[_currentIndex])
-        {
-            if (_currentIndex == _word.Length - 1)
-            {
-                searchSuccessful = true;
-                _currentIndex = 0;
-            }
-            else
-            {
-                _currentIndex++;
-            }
-        }
-        else
-        {
-            //This is probably redundant?
-            _currentIndex = 0;
-        }
-
-        return searchSuccessful;
-    }
-
-    public bool CheckCharBackward(char c)
-    {
-        var searchSuccessful = false;
-        if (c != _reverseWord[_currentBackIndex])
-        {
-            _currentBackIndex = 0;
-        }
-        
-        if (c == _reverseWord[_currentBackIndex])
-        {
-            if (_currentBackIndex == _reverseWord.Length - 1)
-            {
-                searchSuccessful = true;
-                _currentBackIndex = 0;
-            }
-            else
-            {
-                _currentBackIndex++;
-            }
-        }
-        else
-        {
-            _currentBackIndex = 0;
-        }
-
-        return searchSuccessful;
+        return _originalWord;
     }
 }
