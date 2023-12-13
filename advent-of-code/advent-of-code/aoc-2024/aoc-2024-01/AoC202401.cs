@@ -42,5 +42,63 @@ Consider your entire calibration document. What is the sum of all of the calibra
 
 public static class AoC202401
 {
+    private static string[] ReadInputFile()
+    {
+        Console.WriteLine($"Current folder: {AppDomain.CurrentDomain.BaseDirectory}");
+        var inputFilePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "aoc-2024", "aoc-2024-01", "input.txt");
+        return File.ReadAllLines(inputFilePath);
+    }
+
+    private static bool FindFirstAndLastDigit(string line, out int firstDigit, out int lastDigit)
+    {
+        firstDigit = 0;
+        lastDigit = 0;
+        var firstFound = false;
+        var lastFound = false;
+
+        var currentIndex = 0;
+        while (currentIndex != line.Length && !(firstFound && lastFound))
+        {
+            if (!firstFound && char.IsDigit(line[currentIndex]))
+            {
+                firstDigit = line[currentIndex];
+                firstFound = true;
+            }
+            
+            if (!lastFound && char.IsDigit(line[line.Length - currentIndex - 1]))
+            {
+                lastDigit = line[currentIndex];
+                lastFound = true;
+            }
+
+            currentIndex++;
+        }
+
+        return firstFound && lastFound;
+    }
+    
+    public static void ExecuteFirst()
+    {
+        var content = ReadInputFile();
+
+        var currentSum = 0;
+        for (var i = 0; i < content.Length; i++)
+        {
+            var currentElement = content[i];
+            if (!FindFirstAndLastDigit(currentElement, out var currentFirstDigit, out var currentLastDigit))
+            {
+                Console.WriteLine($"Did not find both digits at line {i} ({currentElement})");
+            }
+
+            currentSum += 10 * currentFirstDigit + currentLastDigit;
+        }
+        
+        Console.WriteLine($"Sum: {currentSum}");
+    }
+
+    public static void ExecuteSecond()
+    {
+        
+    }
     
 }
