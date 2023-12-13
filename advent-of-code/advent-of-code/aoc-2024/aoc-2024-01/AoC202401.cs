@@ -171,7 +171,7 @@ public static class AoC202401
             }
             else
             {
-                Console.WriteLine($"Line: {currentLine} - found digits {currentFirstDigit} and {currentLastDigit}, sum: {currentSum}");
+                Console.WriteLine($"Line {i}: {currentLine} - found digits {currentFirstDigit} and {currentLastDigit}, sum: {currentSum}");
             }
 
             sum += currentSum;
@@ -197,7 +197,7 @@ public static class AoC202401
             }
             else
             {
-                Console.WriteLine($"Line: {currentLine} - found digits {currentFirstDigit} and {currentLastDigit}, sum: {currentSum}");
+                Console.WriteLine($"Line {i}: {currentLine} - found digits {currentFirstDigit} and {currentLastDigit}, sum: {currentSum}");
             }
 
             sum += currentSum;

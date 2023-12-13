@@ -26,6 +26,11 @@ public class WordAutomaton : IWordAutomaton
     public bool CheckCharForward(char c)
     {
         var searchSuccessful = false;
+        if (c != _word[_currentIndex])
+        {
+            _currentIndex = 0;
+        }
+        
         if (c == _word[_currentIndex])
         {
             if (_currentIndex == _word.Length - 1)
@@ -40,6 +45,7 @@ public class WordAutomaton : IWordAutomaton
         }
         else
         {
+            //This is probably redundant?
             _currentIndex = 0;
         }
 
@@ -49,6 +55,11 @@ public class WordAutomaton : IWordAutomaton
     public bool CheckCharBackward(char c)
     {
         var searchSuccessful = false;
+        if (c != _reverseWord[_currentBackIndex])
+        {
+            _currentBackIndex = 0;
+        }
+        
         if (c == _reverseWord[_currentBackIndex])
         {
             if (_currentBackIndex == _reverseWord.Length - 1)
