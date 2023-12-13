@@ -42,11 +42,54 @@ Consider your entire calibration document. What is the sum of all of the calibra
 
 public static class AoC202401
 {
+    private static readonly Dictionary<string, int> DigitsMap = new()
+    {
+        {"1", 1},
+        {"2", 2},
+        {"3", 3},
+        {"4", 4},
+        {"5", 5},
+        {"6", 6},
+        {"7", 7},
+        {"8", 8},
+        {"9", 9},
+        {"0", 0},
+        {"one", 1},
+        {"two", 2},
+        {"three", 3},
+        {"four", 4},
+        {"five", 5},
+        {"six", 6},
+        {"seven", 7},
+        {"eight", 8},
+        {"nine", 9},
+        {"zero", 0},
+    };
+
+    private static readonly List<IWordAutomaton> WordCheckers;
+
+    static AoC202401()
+    {
+        WordCheckers = new List<IWordAutomaton>();
+        var digitsKeys = DigitsMap.Keys;
+        foreach (var key in digitsKeys)
+        {
+            WordCheckers.Add(new WordAutomaton(key));
+        }
+    }
+    
     private static string[] ReadInputFile()
     {
         Console.WriteLine($"Current folder: {AppDomain.CurrentDomain.BaseDirectory}");
         var inputFilePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "aoc-2024", "aoc-2024-01", "input.txt");
         return File.ReadAllLines(inputFilePath);
+    }
+    
+    private static bool ConvertWordToDigit(string word, out int digit)
+    {
+        var containsWord = DigitsMap.ContainsKey(word);
+        digit = containsWord ? DigitsMap[word] : 0;
+        return containsWord;
     }
 
     private static bool FindFirstAndLastDigit(string line, out int firstDigit, out int lastDigit)
@@ -77,33 +120,89 @@ public static class AoC202401
 
         return firstFound && lastFound;
     }
+
+    private static bool FindFirstAndLastDigitV2(string line, out int firstDigit, out int lastDigit)
+    {
+        firstDigit = 0;
+        lastDigit = 0;
+        var firstFound = false;
+        var lastFound = false;
+        
+        var currentIndex = 0;
+        while (currentIndex != line.Length && !(firstFound && lastFound))
+        {
+            var currentChar = line[currentIndex];
+            var reverseChar = line[line.Length - currentIndex - 1];
+            foreach (var wordChecker in WordCheckers)
+            {
+                if (!firstFound && wordChecker.CheckCharForward(currentChar))
+                {
+                    ConvertWordToDigit(wordChecker.GetWord(), out firstDigit);
+                    firstFound = true;
+                }
+
+                if (!lastFound && wordChecker.CheckCharBackward(reverseChar))
+                {
+                    ConvertWordToDigit(wordChecker.GetWord(), out lastDigit);
+                    lastFound = true;
+                }
+            }
+
+            currentIndex++;
+        }
+
+        return firstFound && lastFound;
+    }
     
     public static void ExecuteFirst()
     {
         var content = ReadInputFile();
 
-        var currentSum = 0;
+        var sum = 0;
         for (var i = 0; i < content.Length; i++)
         {
             var currentLine = content[i];
-            if (!FindFirstAndLastDigit(currentLine, out var currentFirstDigit, out var currentLastDigit))
+            var digitsFound = FindFirstAndLastDigit(currentLine, out var currentFirstDigit, out var currentLastDigit);
+            var currentSum = 10 * currentFirstDigit + currentLastDigit;
+            
+            if (!digitsFound)
             {
                 Console.WriteLine($"Did not find both digits at line {i} ({currentLine})");
             }
             else
             {
-                Console.WriteLine($"Line: {currentLine} - found digits {currentFirstDigit} and {currentLastDigit}");
+                Console.WriteLine($"Line: {currentLine} - found digits {currentFirstDigit} and {currentLastDigit}, sum: {currentSum}");
             }
 
-            currentSum += 10 * currentFirstDigit + currentLastDigit;
+            sum += currentSum;
         }
         
-        Console.WriteLine($"Sum: {currentSum}");
+        Console.WriteLine($"Sum: {sum}");
     }
 
     public static void ExecuteSecond()
     {
+        var content = ReadInputFile();
+
+        var sum = 0;
+        for (var i = 0; i < content.Length; i++)
+        {
+            var currentLine = content[i];
+            var digitsFound = FindFirstAndLastDigitV2(currentLine, out var currentFirstDigit, out var currentLastDigit);
+            var currentSum = 10 * currentFirstDigit + currentLastDigit;
+            
+            if (!digitsFound)
+            {
+                Console.WriteLine($"Did not find both digits at line {i} ({currentLine})");
+            }
+            else
+            {
+                Console.WriteLine($"Line: {currentLine} - found digits {currentFirstDigit} and {currentLastDigit}, sum: {currentSum}");
+            }
+
+            sum += currentSum;
+        }
         
+        Console.WriteLine($"Sum: {sum}");
     }
-    
 }
