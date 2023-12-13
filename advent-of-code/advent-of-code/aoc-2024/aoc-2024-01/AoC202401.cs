@@ -59,15 +59,16 @@ public static class AoC202401
         var currentIndex = 0;
         while (currentIndex != line.Length && !(firstFound && lastFound))
         {
+            var reverseIndex = line.Length - currentIndex - 1;
             if (!firstFound && char.IsDigit(line[currentIndex]))
             {
-                firstDigit = line[currentIndex];
+                firstDigit = line[currentIndex] - '0';
                 firstFound = true;
             }
             
-            if (!lastFound && char.IsDigit(line[line.Length - currentIndex - 1]))
+            if (!lastFound && char.IsDigit(line[reverseIndex]))
             {
-                lastDigit = line[currentIndex];
+                lastDigit = line[reverseIndex] - '0';
                 lastFound = true;
             }
 
@@ -84,10 +85,14 @@ public static class AoC202401
         var currentSum = 0;
         for (var i = 0; i < content.Length; i++)
         {
-            var currentElement = content[i];
-            if (!FindFirstAndLastDigit(currentElement, out var currentFirstDigit, out var currentLastDigit))
+            var currentLine = content[i];
+            if (!FindFirstAndLastDigit(currentLine, out var currentFirstDigit, out var currentLastDigit))
             {
-                Console.WriteLine($"Did not find both digits at line {i} ({currentElement})");
+                Console.WriteLine($"Did not find both digits at line {i} ({currentLine})");
+            }
+            else
+            {
+                Console.WriteLine($"Line: {currentLine} - found digits {currentFirstDigit} and {currentLastDigit}");
             }
 
             currentSum += 10 * currentFirstDigit + currentLastDigit;
