@@ -83,6 +83,8 @@ public static class AoC202402
         maxCubes.maxRed = 0;
         maxCubes.maxGreen = 0;
         maxCubes.maxBlue = 0;
+
+        var gamePlayable = true;
         
         var specificDraws = SplitAndTrimInput(gameRaw, ',');
         foreach (var specificDraw in specificDraws)
@@ -93,22 +95,22 @@ public static class AoC202402
             {
                 case "red":
                     if (dataValue > maxCubes.maxRed) maxCubes.maxRed = dataValue;
-                    if (dataValue > RedLimit) return false;
+                    if (dataValue > RedLimit) gamePlayable = false;
                     break;
                 case "green":
                     if (dataValue > maxCubes.maxGreen) maxCubes.maxGreen = dataValue;
-                    if (dataValue > GreenLimit) return false;
+                    if (dataValue > GreenLimit) gamePlayable = false;
                     break;
                 case "blue":
                     if (dataValue > maxCubes.maxBlue) maxCubes.maxBlue = dataValue;
-                    if (dataValue > BlueLimit) return false;
+                    if (dataValue > BlueLimit) gamePlayable = false;
                     break;
                 default:
                     break;
             }
         }
         
-        return true;
+        return gamePlayable;
     }
 
     /// <summary>
@@ -122,6 +124,8 @@ public static class AoC202402
         maxCubes.maxRed = 0;
         maxCubes.maxGreen = 0;
         maxCubes.maxBlue = 0;
+
+        var gamePlayable = true;
         
         var gameInputRaw = line.Split(':')[1].Trim();
         var specificGamesRaw = SplitAndTrimInput(gameInputRaw, ';');
@@ -133,10 +137,10 @@ public static class AoC202402
             if (currentMax.maxGreen > maxCubes.maxGreen) maxCubes.maxGreen = currentMax.maxGreen;
             if (currentMax.maxBlue > maxCubes.maxBlue) maxCubes.maxBlue = currentMax.maxBlue;
             
-            if (!gamePossible) return false;
+            if (!gamePossible) gamePlayable = false;
         }
         
-        return true;
+        return gamePlayable;
     }
 
     public static void ExecuteFirst()
