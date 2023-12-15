@@ -157,8 +157,11 @@ public static class AoC202402
             if (ParseGame(input[i], out currentMax))
             {
                 currentSum += i + 1;
-                sumMax += currentMax.maxBlue * currentMax.maxGreen * currentMax.maxRed;
             }
+            var currentSumMax = currentMax.maxBlue * currentMax.maxGreen * currentMax.maxRed;
+            sumMax += currentSumMax;
+            Console.WriteLine($"Sum {i+1} max cube game: {currentSumMax}, RGB: {currentMax.maxRed}, {currentMax.maxGreen}, {currentMax.maxBlue}, {input[i]}");
+
         }
         
         Console.WriteLine($"Sum of possible games: {currentSum}");
