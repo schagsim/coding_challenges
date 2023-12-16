@@ -19,6 +19,9 @@ public static class AoC202403
         '#'
     };
     
+    //Dict<yCoord, Dict<xCoord, ref EngineNumber>>
+    private static Dictionary<int, Dictionary<int, HashSet<EngineNumber>>> GearsEngineNumbers = new();
+    
     private static string[] ReadInputFile()
     {
         Console.WriteLine($"Current folder: {AppDomain.CurrentDomain.BaseDirectory}");
@@ -26,20 +29,44 @@ public static class AoC202403
         return File.ReadAllLines(inputFilePath);
     }
 
-    private static bool CheckDigitPosition(int indexY, int indexX, in string[] input)
+    private static void AddEngineNumberToGearMarkerCoords(int yCoord, int xCoord, EngineNumber engineNumber)
+    {
+        var gearsKeys = GearsEngineNumbers.Keys;
+        if (!gearsKeys.Contains(yCoord))
+        {
+            GearsEngineNumbers[yCoord] = new Dictionary<int, HashSet<EngineNumber>>();
+        }
+
+        var yCoordsGearsKeys = GearsEngineNumbers[yCoord].Keys;
+        if (!yCoordsGearsKeys.Contains(xCoord))
+        {
+            GearsEngineNumbers[yCoord][xCoord] = new HashSet<EngineNumber>();
+        }
+
+        GearsEngineNumbers[yCoord][xCoord].Add(engineNumber);
+    }
+
+    private static bool IsPositionSymbol(int indexY, int indexX, in string[] input, out bool isStar)
+    {
+        isStar = input[indexY][indexX] == '*';
+        return EngineSymbols.Contains(input[indexY][indexX]);
+    }
+
+    private static bool CheckDigitPosition(int indexY, int indexX, in string[] input, out bool isStar)
     {
         Console.WriteLine($"DEBUG - Checking index [{indexY}, {indexX}], digit {input[indexY][indexX]}");
+        isStar = false;
         if (indexX - 1 >= 0)
         {
             //Console.WriteLine($"DEBUG - Checking index [{indexY}, {indexX - 1}], digit {input[indexX][indexY]}");
-            if (EngineSymbols.Contains(input[indexY][indexX - 1]))
+            if (IsPositionSymbol(indexY, indexX - 1, input, out isStar))
             {
                 return true;
             }
             
             if (indexY - 1 >= 0)
             {
-                if (EngineSymbols.Contains(input[indexY - 1][indexX - 1]))
+                if (IsPositionSymbol(indexY - 1, indexX - 1, input, out isStar))
                 {
                     return true;
                 }
@@ -47,7 +74,7 @@ public static class AoC202403
 
             if (indexY + 1 <= input.Length - 1)
             {
-                if (EngineSymbols.Contains(input[indexY + 1][indexX - 1]))
+                if (IsPositionSymbol(indexY + 1, indexX - 1, input, out isStar))
                 {
                     return true;
                 }
@@ -56,14 +83,14 @@ public static class AoC202403
 
         if (indexX + 1 <= input.Length - 1)
         {
-            if (EngineSymbols.Contains(input[indexY][indexX + 1]))
+            if (IsPositionSymbol(indexY, indexX + 1, input, out isStar))
             {
                 return true;
             }
             
             if (indexY - 1 >= 0)
             {
-                if (EngineSymbols.Contains(input[indexY - 1][indexX + 1]))
+                if (IsPositionSymbol(indexY - 1, indexX + 1, input, out isStar))
                 {
                     return true;
                 }
@@ -71,7 +98,7 @@ public static class AoC202403
 
             if (indexY + 1 <= input.Length - 1)
             {
-                if (EngineSymbols.Contains(input[indexY + 1][indexX + 1]))
+                if (IsPositionSymbol(indexY + 1, indexX + 1, input, out isStar))
                 {
                     return true;
                 }
@@ -80,7 +107,7 @@ public static class AoC202403
 
         if (indexY - 1 >= 0)
         {
-            if (EngineSymbols.Contains(input[indexY - 1][indexX]))
+            if (IsPositionSymbol(indexY - 1, indexX, input, out isStar))
             {
                 return true;
             }
@@ -88,7 +115,7 @@ public static class AoC202403
 
         if (indexY + 1 <= input.Length - 1)
         {
-            if (EngineSymbols.Contains(input[indexY + 1][indexX]))
+            if (IsPositionSymbol(indexY + 1, indexX, input, out isStar))
             {
                 return true;
             }
@@ -126,9 +153,13 @@ public static class AoC202403
 
                     readingNumber = true;
                     currentEngineNumber.AddDigit(c);
-                    if (CheckDigitPosition(i, j, in input))
+                    if (CheckDigitPosition(i, j, in input, out var isStar))
                     {
                         currentEngineNumber.MarkAsValid();
+                        if (isStar)
+                        {
+                            AddEngineNumberToGearMarkerCoords(i, j, currentEngineNumber);
+                        }
                     }
                 }
                 else
@@ -161,6 +192,23 @@ public static class AoC202403
                 }
             }
         }
+
+        var sumGears = 0;
+        foreach (var gearsEngineNumber in GearsEngineNumbers)
+        {
+            foreach (var xPositions in gearsEngineNumber.Value)
+            {
+                var currentEngineSet = xPositions.Value;
+                if (currentEngineSet.Count == 2)
+                {
+                    foreach (var engineNumber in currentEngineSet)
+                    {
+                        sumGears += engineNumber.GetNumber();
+                    }
+                }
+            }
+        }
+        Console.WriteLine($"Sum of gear numbers: {sumGears}");
 
         var symbolsOutput = new StringBuilder("Symbols: ");
         foreach (var symbol in symbols)
